@@ -1,54 +1,31 @@
-const { Url } = require('../models/index');
+const { urls } = require('../models/index');
 const shortid = require('shortid');
 
 exports.shortenUrl = async (req, res) => {
     const { originalUrl } = req.body;
     const shortUrl = shortid.generate();
-
-    try {
-        const url = await Url.create({ originalUrl, shortUrl });
-        res.json(url);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    const newUrl = { id: urls.length + 1, originalUrl, shortUrl, createdAt: new Date() };
+    urls.push(newUrl);
+    res.json(newUrl);
 };
 
 exports.getUrlById = async (req, res) => {
-    try {
-        const url = await Url.findByPk(req.params.id);
-        if (!url) return res.status(404).json({ error: 'URL não encontrada' });
-        res.json(url);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    const url = urls.find(u => u.id == req.params.id);
+    if (!url) return res.status(404).json({ error: 'URL não encontrada' });
+    res.json(url);
 };
 
 exports.getUrlsByDate = async (req, res) => {
     const { date } = req.params;
-    const start = new Date(date);
-    const end = new Date(date);
-    end.setDate(end.getDate() + 1);
-
-    try {
-        const urls = await Url.findAll({
-            where: {
-                createdAt: {
-                    [require('sequelize').Op.between]: [start, end]
-                }
-            }
-        });
-        res.json(urls);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    const urlsByDate = urls.filter(u => {
+        const uDate = new Date(u.createdAt).toISOString().split('T')[0];
+        return uDate === date;
+    });
+    res.json(urlsByDate);
 };
 
 exports.getUrlByShort = async (req, res) => {
-    try {
-        const url = await Url.findOne({ where: { shortUrl: req.params.shortUrl } });
-        if (!url) return res.status(404).json({ error: 'URL não encontrada' });
-        res.json(url);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    const url = urls.find(u => u.shortUrl === req.params.shortUrl);
+    if (!url) return res.status(404).json({ error: 'URL não encontrada' });
+    res.json(url);
 };
