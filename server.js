@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 const urlRoutes = require('./routes/urlRoutes');
 app.use('/api', urlRoutes);
 
-// Rota principal (raiz)
+// ✅ Apenas uma vez a rota raiz
 app.get('/', (req, res) => {
     res.send('🚀 API do Encurtador de URLs está funcionando! Use /api/shorten para criar URLs.');
 });
